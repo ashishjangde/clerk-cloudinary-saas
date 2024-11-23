@@ -11,5 +11,5 @@ export const GET = asyncHandler(async () => {
         },
     });
 
-    return NextResponse.json(new ApiResponse(videos));
+    return NextResponse.json(new ApiResponse(videos),{ status: 200 });
 });

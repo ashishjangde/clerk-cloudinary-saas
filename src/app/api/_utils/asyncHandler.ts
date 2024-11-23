@@ -3,27 +3,36 @@ import { ApiResponse } from "./ApiResponse";
 import { ApiError } from "./ApiError";
 
 
-type AsyncHandler<C = { params?: Record<string, string> }> = (
+type RouteParams = Record<string, string | string[]>;
+
+
+
+type AsyncHandler = (
   req: NextRequest,
-  context: C
-) => Promise<NextResponse | void>;
+  context: { params: Promise<RouteParams> }
+) => Promise<NextResponse>;
 
 const asyncHandler = (
   fn: AsyncHandler
-): AsyncHandler => async (req, context) => {
-  try {
-    return await fn(req, context);
-  } catch (error) {
-    console.error(error);
-    if (error instanceof ApiError) {
-      return NextResponse.json(new ApiResponse<null>(null, error), { status: error.statusCode });
+): ((req: NextRequest, context: { params: Promise<RouteParams> }) => Promise<NextResponse>) => {
+  return async (req, context) => {
+    try {
+      const response = await fn(req, context);
+      return response;
+    } catch (error) {
+      console.error(error);
+      if (error instanceof ApiError) {
+        return NextResponse.json(
+          new ApiResponse<null>(null, error),
+          { status: error.statusCode }
+        );
+      }
+      return NextResponse.json(
+        new ApiResponse<null>(null, new ApiError(500, "Internal server error")),
+        { status: 500 }
+      );
     }
-    return NextResponse.json(
-      new ApiResponse<null>(null, new ApiError(500, "Internal server error")),
-      { status: 500 }
-    );
-  }
+  };
 };
 
 export default asyncHandler;
-
