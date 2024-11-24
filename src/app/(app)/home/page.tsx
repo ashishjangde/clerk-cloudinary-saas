@@ -10,13 +10,12 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [Error, setError] = useState<string | null>(null);
 
-  // Helper function to format file size
  
 
   const fetchVideos = useCallback(async () => {
     try {
       const response = await axios.get("/api/videos");
-      console.log(response.data);  // Log to inspect the response data
+      console.log(response.data);  
       if (Array.isArray(response.data.data)) {
         setVideos(response.data.data);
       } else {
